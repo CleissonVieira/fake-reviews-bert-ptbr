@@ -2,7 +2,6 @@
 # pip install pandas
 # pip install scikit-learn
 # pip install datasets
-# pip install datasets
 # pip install transformers[torch]
 # pip install accelerate -U
 
