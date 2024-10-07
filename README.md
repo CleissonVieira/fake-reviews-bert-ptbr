@@ -4,7 +4,8 @@
 O dataset utilizado neste projeto foi coletado do repositório [yelp-fake-reviews-ptbr](https://github.com/lucaspercisi/yelp-fake-reviews-ptbr/tree/main/Datasets)
 
 ## Contato
-- **Cleisson Vieira** - cleisson.raimundo@gmail.com
+- **Cleisson Vieira** - cleisson.raimundi@gmail.com
+
 
 ---
 
