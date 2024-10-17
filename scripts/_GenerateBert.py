@@ -46,7 +46,6 @@ def TreinarModelo(modelo, train_loader, otimizador, agendador):
         otimizador.step()
         agendador.step()
 
-    torch.cuda.empty_cache()
     return perdaTotal / len(train_loader)
 
 def AvaliarModelo(modelo, valLoader, nomeDf, nomePng):
@@ -106,23 +105,31 @@ def IniciarProcesso(dfUtilizado, conjuntoDados, nomeDf):
         'Recall_Real': [], 'Recall_Fake': [], 'Recall': []
     }
     
-    encodingsCompleto = Utils.TokenizarTextos(dfUtilizado['content'].values, dfUtilizado['fake_review'].values, TOKENIZADOR, MAX_LENGTH)
-    
     conteudoAvaliacao, booleanoRealFake = dfUtilizado['content'].values, dfUtilizado['fake_review'].values
+    encodingsCompletos = Utils.TokenizarTextos(conteudoAvaliacao, booleanoRealFake, TOKENIZADOR, MAX_LENGTH)
     
     for kfolds, (treino80, teste20) in enumerate(skf.split(conteudoAvaliacao, booleanoRealFake)):
         print(f"\nDobras {kfolds + 1}/5")
     
-        conteudoTreino60, conteudoTeste = conteudoAvaliacao[treino80], conteudoAvaliacao[teste20]
-        realFakeTreino60, realFakeTeste = booleanoRealFake[treino80], booleanoRealFake[teste20]
+        # conteudoTreino60, conteudoTeste20 = conteudoAvaliacao[treino80], conteudoAvaliacao[teste20]
+        # realFakeTreino60, realFakeTeste20 = booleanoRealFake[treino80], booleanoRealFake[teste20]
+        
+        # conteudoTreino60, conteudoValidacao20, realFakeTreino60, realFakeValidacao20 = train_test_split(
+        #     conteudoTreino60, realFakeTreino60, test_size=0.25, stratify=realFakeTreino60, random_state=42
+        # )
+        
+        # encodingsTreino = Utils.TokenizarTextos(conteudoTreino60, realFakeTreino60, TOKENIZADOR, MAX_LENGTH)
+        # encodingsValidacao = Utils.TokenizarTextos(conteudoValidacao20, realFakeValidacao20, TOKENIZADOR, MAX_LENGTH)
+        # encodingsTeste = Utils.TokenizarTextos(conteudoTeste20, realFakeTeste20, TOKENIZADOR, MAX_LENGTH)
+        
+        encodingsTreinoVal = {key: val[treino80] for key, val in encodingsCompletos.items()}
+        encodingsTeste = {key: val[teste20] for key, val in encodingsCompletos.items()}
+        
+        indicesTreinoVal = np.arange(len(treino80))
+        indicesTreino, indicesValidacao = train_test_split(indicesTreinoVal, test_size=0.25, stratify=booleanoRealFake[treino80], random_state=42)
     
-        conteudoTreino60, conteudoValidacao20, realFakeTreino60, realFakeValidacao20 = train_test_split(
-            conteudoTreino60, realFakeTreino60, test_size=0.25, stratify=realFakeTreino60, random_state=42
-        )
-    
-        encodingsTreino = Utils.TokenizarTextos(conteudoTreino60, realFakeTreino60, TOKENIZADOR, MAX_LENGTH)
-        encodingsValidacao = Utils.TokenizarTextos(conteudoValidacao20, realFakeValidacao20, TOKENIZADOR, MAX_LENGTH)
-        encodingsTeste = Utils.TokenizarTextos(conteudoTeste, realFakeTeste, TOKENIZADOR, MAX_LENGTH)
+        encodingsTreino = {key: val[indicesTreino] for key, val in encodingsTreinoVal.items()}
+        encodingsValidacao = {key: val[indicesValidacao] for key, val in encodingsTreinoVal.items()}
         
         datasetTreino = DatasetBert(encodingsTreino) 
         datasetValidacao = DatasetBert(encodingsValidacao)
@@ -243,9 +250,9 @@ def IniciarProcesso(dfUtilizado, conjuntoDados, nomeDf):
 
 
 
-PATH_DATA_EXECUCAO = f'./resultados/{datetime.now().strftime("%Y-%m-%d_%H-%M")}/'
+PATH_DATA_EXECUCAO = f'../resultados/{datetime.now().strftime("%Y-%m-%d_%H-%M")}/'
 RESULTADOS_CSV = f'{PATH_DATA_EXECUCAO}{RELATORIO_GERAL}'
 
-verdadeiros, falsos = 3387, 3387
-df_bert = Utils.DatasetSample.ObterDataset(dfPtBr, 378, 122) # oficial 3387, 3387
+verdadeiros, falsos = 3387, 3387 # oficial 3387, 3387
+df_bert = Utils.DatasetSample.ObterDataset(dfPtBr, verdadeiros, falsos) 
 IniciarProcesso(df_bert, 'Português Balanceado (i)', f'lr-{LEARNING_RATE}_df-v{verdadeiros}-f{falsos}')
