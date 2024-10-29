@@ -1,5 +1,6 @@
 *.png
 *.pth
+best_model_bert/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
