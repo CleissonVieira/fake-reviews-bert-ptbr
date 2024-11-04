@@ -1,6 +1,7 @@
-*.png
 *.pth
-best_model_bert/
+*.safetensors
+logs/
+runs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

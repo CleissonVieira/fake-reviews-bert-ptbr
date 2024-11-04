@@ -1,0 +1,6 @@
+tipo,data,log
+treino,20241104_081941,"{'eval_loss': 0.6797695755958557, 'eval_accuracy': 0.71033, 'eval_precision': 0.67123, 'eval_recall': 0.81818, 'eval_f1': 0.73746, 'eval_runtime': 21.5939, 'eval_samples_per_second': 50.199, 'eval_steps_per_second': 3.149, 'epoch': 5.0}"
+treino,20241104_081941,"{'eval_loss': 0.5666487812995911, 'eval_accuracy': 0.71679, 'eval_precision': 0.67319, 'eval_recall': 0.8324, 'eval_f1': 0.74438, 'eval_runtime': 35.8051, 'eval_samples_per_second': 30.275, 'eval_steps_per_second': 1.899, 'epoch': 4.0}"
+treino,20241104_081941,"{'eval_loss': 0.5768417119979858, 'eval_accuracy': 0.70018, 'eval_precision': 0.67869, 'eval_recall': 0.74109, 'eval_f1': 0.70852, 'eval_runtime': 62.904, 'eval_samples_per_second': 17.233, 'eval_steps_per_second': 1.081, 'epoch': 3.0}"
+treino,20241104_081941,"{'eval_loss': 0.6290143728256226, 'eval_accuracy': 0.6762, 'eval_precision': 0.64968, 'eval_recall': 0.75696, 'eval_f1': 0.69923, 'eval_runtime': 24.5383, 'eval_samples_per_second': 44.176, 'eval_steps_per_second': 2.771, 'epoch': 3.0}"
+treino,20241104_081941,"{'eval_loss': 0.5674091577529907, 'eval_accuracy': 0.70545, 'eval_precision': 0.67515, 'eval_recall': 0.81555, 'eval_f1': 0.73874, 'eval_runtime': 19.0301, 'eval_samples_per_second': 56.91, 'eval_steps_per_second': 3.573, 'epoch': 4.0}"
