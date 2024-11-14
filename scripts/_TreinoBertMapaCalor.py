@@ -80,7 +80,6 @@ def compute_metrics(eval_pred):
 def tokenize_function(df):
     return tokenizer(df['text'], padding='max_length', truncation=True, max_length=_MAX_LENGTH)
 
-
 vectorFeatures = [
     [f'content', df['content']],
     [f'qtd_friends, qtd_reviews, qtd_photos. (sem legenda)', df.apply(lambda x: f"{x['qtd_friends']},{x['qtd_reviews']},{x['qtd_photos']}.", axis=1)],
@@ -111,8 +110,8 @@ nome_arquivo_results = f"resultadosMapaCalor.csv"
 for feature, learning_rate, weight_decay in combinations:
     feature_name = feature[0]
     
-    if feature_name == 'content' and learning_rate in (1e-05, 2.5e-5, 3e-5) and weight_decay in (0.03, 0.01, 0.001):
-        continue
+    # if feature_name == 'content' and learning_rate in (1e-05, 2.5e-5, 3e-5) and weight_decay in (0.03, 0.01, 0.001):
+    #     continue
     
     print(f"Executando com: Learning Rate = {learning_rate}, Weight Decay = {weight_decay}, Feature = {feature_name}")
     

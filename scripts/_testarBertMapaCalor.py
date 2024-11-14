@@ -37,13 +37,16 @@ def compute_metrics(eval_pred):
 def tokenize_function(df):
     return tokenizer(df['text'], padding='max_length', truncation=True, max_length=_MAX_LENGTH)
 
-
 vectorFeatures = [
     [f'content', df['content']],
+    # [f'qtd_friends, qtd_reviews, qtd_photos. (sem legenda)', df.apply(lambda x: f"{x['qtd_friends']},{x['qtd_reviews']},{x['qtd_photos']}.", axis=1)],
+    # [f'qtd_friends, qtd_reviews, qtd_photos. (com legenda)', df.apply(lambda x: f"Número de amigos: {x['qtd_friends']}, Número de avaliações: {x['qtd_reviews']}, Número de fotos: {x['qtd_photos']}.", axis=1)],
+    # [f'content, qtd_friends, qtd_reviews, qtd_photos. (sem legenda)', df.apply(lambda x: f'"{x['content']}", {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)],
+    # [f'content, qtd_friends, qtd_reviews, qtd_photos. (com legenda)', df.apply(lambda x: f'Review: "{x['content']}", Número de amigos: {x['qtd_friends']}, Número de avaliações: {x['qtd_reviews']}, Número de fotos: {x['qtd_photos']}.', axis=1)]
 ]
 
-vectorLearningRate = [1e-5, 2.5e-5, 3e-5]
-vectorWeightDecay = [0.03, 0.01, 0.001]
+vectorLearningRate = [1e-5, 2.5e-5, 3e-5] # 1e-5, 2.5e-5, 2e-5, 3e-5
+vectorWeightDecay = [0.03, 0.01, 0.001] # 0.05 0.03, 0.01, 0.001
 combinations = itertools.product(vectorFeatures, vectorLearningRate, vectorWeightDecay)
 
 _SAMPLE_DF = 3387
@@ -64,8 +67,8 @@ nome_arquivo_results = f"resultadosMapaCalor.csv"
 for feature, learning_rate, weight_decay in combinations:
     feature_name = feature[0]
     
-    if feature_name == 'content' and learning_rate in (1e-05, 2.5e-5, 3e-5) and weight_decay in (0.03, 0.01):
-        continue
+    # if feature_name == 'content' and learning_rate in (1e-05, 2.5e-5, 3e-5) and weight_decay in (0.03, 0.01):
+    #     continue
     
     print(f"Executando com: Learning Rate = {learning_rate}, Weight Decay = {weight_decay}, Feature = {feature_name}")
     
