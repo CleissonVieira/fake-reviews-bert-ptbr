@@ -3,12 +3,12 @@ import json
 import shutil
 import warnings
 import itertools
-import matplotlib
+import matplotlib # type: ignore
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import tensorflow as tf
-import matplotlib.pyplot as plt
+import seaborn as sns # type: ignore
+import tensorflow as tf # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix, precision_score, recall_score, f1_score
 from transformers import     BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, EarlyStoppingCallback
 from sklearn.model_selection import StratifiedKFold, train_test_split
