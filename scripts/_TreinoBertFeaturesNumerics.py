@@ -1,14 +1,17 @@
 import os
 import json
+import torch
 import shutil
 import warnings
 import matplotlib
 import numpy as np
 import pandas as pd
+import torch.nn as nn
 import seaborn as sns
 import tensorflow as tf
+import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments, EarlyStoppingCallback
+from transformers import BertTokenizer, BertModel, BertForSequenceClassification, Trainer, TrainingArguments, EarlyStoppingCallback
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from datetime import datetime
@@ -20,32 +23,9 @@ matplotlib.use('Agg')
 url_dataset = 'https://raw.githubusercontent.com/lucaspercisi/yelp-fake-reviews-ptbr/main/Datasets/portuguese/yelp-fake-reviews-dataset-pt-pos-tagged.csv'
 df = pd.read_csv(url_dataset)
 
-# _FEATURES = f'textual: content'
-# df['cleaned_content'] = df['content']
-
-# _FEATURES = f'textual: qtd_friends, qtd_reviews, qtd_photos. (sem legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f"{x['qtd_friends']},{x['qtd_reviews']},{x['qtd_photos']}.", axis=1)
-
-# _FEATURES = f'textual: qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f"Número de amigos: {x['qtd_friends']}. Número de avaliações: {x['qtd_reviews']}. Número de fotos: {x['qtd_photos']}.", axis=1)
-
-# duplicado com aspas (deletar o pior)
-# _FEATURES = f'textual: content, qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f'"{x['content']}", {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)
-
-# duplicado com aspas (correto, ver qual fica melhor)
-# _FEATURES = f'textual: content, qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f'"{x['content']}", {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)
-
-# _FEATURES = f'textual: content, qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f'Review: "{x['content']}". Número de amigos: {x['qtd_friends']}. Número de avaliações: {x['qtd_reviews']}. Número de fotos: {x['qtd_photos']}.', axis=1)
-
-# _FEATURES = f'textual: content, qtd_friends, qtd_reviews, qtd_photos. (com legenda, sem aspas)'
-# df['cleaned_content'] = df.apply(lambda x: f'Review: {x['content']}. Número de amigos: {x['qtd_friends']}. Número de avaliações: {x['qtd_reviews']}. Número de fotos: {x['qtd_photos']}.', axis=1)
-
-# duplicado sem aspas (correto, ver qual fica melhor)
-# _FEATURES = f'textual: content, qtd_friends, qtd_reviews, qtd_photos. (sem legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f'{x['content']}, {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)
+_FEATURES = 'textual: content | numérica: qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
+df['cleaned_content'] = df['content']
+df['features_numerics'] = df.apply(lambda x: [x['qtd_friends'], x['qtd_reviews'], x['qtd_photos']], axis=1)
 
 _SAMPLE_DF = 3387
 
@@ -83,14 +63,56 @@ _K_FOLDS = 5
 skf = StratifiedKFold(n_splits=_K_FOLDS, shuffle=True, random_state=42)
 fold_eval_results = []
 
-X = df_balanceado['cleaned_content']
-y = df_balanceado['fake_review'].astype(int).values
-
 #                   best full                     best sample
 split_train = 64 #  64           72,      81      72 
 split_val = 16   #  16           18       9       8
 split_test = 0.2 #  0.2          0.1,     0.1     0.2
-X_train_and_val, X_test, y_train_and_val, y_test = train_test_split(X, y, test_size=split_test, stratify=y, random_state=42)
+
+X = df_balanceado['cleaned_content']
+y = df_balanceado['fake_review'].astype(int).values
+
+if 'features_numerics' in df.columns:
+    _FEATURES_NUMERICS = True
+    X_num = np.array(df_balanceado['features_numerics'].tolist())
+    X_train_and_val, X_test, y_train_and_val, y_test, X_num_train_and_val, X_num_test = train_test_split(X, y, X_num, test_size=0.2, stratify=y, random_state=42)
+else:
+    _FEATURES_NUMERICS = False
+    X_train_and_val, X_test, y_train_and_val, y_test = train_test_split(X, y, test_size=split_test, stratify=y, random_state=42)
+
+if _FEATURES_NUMERICS:
+    # Normalizar os dados
+    mean = X_num_train_and_val.mean(axis=0)
+    std = X_num_train_and_val.std(axis=0)
+    X_num_train_and_val = (X_num_train_and_val - mean) / std
+    X_num_test = (X_num_test - mean) / std
+
+    class BertWithNumericalFeatures(nn.Module):
+        def __init__(self):
+            super(BertWithNumericalFeatures, self).__init__()
+            self.bert = BertModel.from_pretrained(_MODELO, ignore_mismatched_sizes=True)
+            self.dropout = nn.Dropout(0.5)
+            self.classifier = nn.Linear(768 + 3, 2)  # 768 hidden size do BERT + 3 features numéricas
+
+        def save(self, path):
+            self.bert.save_pretrained(path)
+        
+        def forward(self, input_ids, attention_mask, features_numerics=None, labels=None):
+            outputs = self.bert(input_ids, attention_mask=attention_mask)
+            pooled_output = outputs.pooler_output
+            if features_numerics is not None:
+                combined_output = torch.cat((pooled_output, features_numerics), dim=1)
+            else:
+                combined_output = pooled_output
+
+            combined_output = self.dropout(combined_output)
+            logits = self.classifier(combined_output)
+
+            # Calcule e retorne a perda, se os rótulos forem fornecidos
+            if labels is not None:
+                loss = F.cross_entropy(logits, labels)
+                return loss, logits  # Retorne a perda e os logits
+            else:
+                return logits  # Retorne apenas os logits se não houver rótulos
 
 data_hora = f'{datetime.now().strftime("%Y%m%d_%H%M%S")}'
 patch = f'../resultados/'
@@ -98,7 +120,7 @@ patchModel = f'{patch}best_model_bert/'
 best_model_path = f"{patchModel}{data_hora}/"
 nome_arquivo_results = f"resultadosTreinoTeste.csv"
 nome_arquivo_log_validacao = f"logTreino.csv"
-observacao = f'df full {int(_SAMPLE_DF*2)} balanceado, {_EPOCHS} epochs, {_K_FOLDS} folds, lr {_LEARNING_RATE}, max_lenght {_MAX_LENGTH}, weight_decay {_WEIGHT_DECAY}, early_stopping {_EARLY_STOPPING}, drop_out {_DROP_OUT}'
+observacao = f'df full {int(_SAMPLE_DF*2)} balanceado, {_EPOCHS} epochs, {_K_FOLDS} folds, lr {_LEARNING_RATE}, max_lenght {_MAX_LENGTH}, weight_decay {_WEIGHT_DECAY}, early_stopping {_EARLY_STOPPING}'
 
 training_args = TrainingArguments(
     output_dir=best_model_path,
@@ -123,16 +145,11 @@ if True:
     for fold, (train_index, eval_index) in enumerate(skf.split(X_train_and_val, y_train_and_val)):
         print(f"\nTreinando o fold {fold + 1}/{_K_FOLDS}\n")
         
-        # Dataset X_train_and_val dividido em: Treino 90%, Validação 10%
-        # half_eval_index = eval_index[:len(eval_index) // 2]
-        # train_index_with_half_eval = list(train_index) + list(half_eval_index)
-        # remaining_eval_index = eval_index[len(eval_index) // 2:]
-        # X_train, X_eval = X.iloc[train_index_with_half_eval], X.iloc[remaining_eval_index]
-        # y_train, y_eval = y[train_index_with_half_eval], y[remaining_eval_index]
-        
         # Dataset X_train_and_val dividido em: Treino 80%, Validação 20%
         X_train, X_eval = X.iloc[train_index], X.iloc[eval_index]
         y_train, y_eval = y[train_index], y[eval_index]
+        if _FEATURES_NUMERICS:
+            X_num_train, X_num_eval = X_num_train_and_val[train_index], X_num_train_and_val[eval_index]
         
         train_data = Dataset.from_dict({'text': X_train.tolist(), 'labels': y_train.tolist()})
         eval_data = Dataset.from_dict({'text': X_eval.tolist(), 'labels': y_eval.tolist()})
@@ -140,7 +157,13 @@ if True:
         train_data = train_data.map(tokenize_function, batched=True)
         eval_data = eval_data.map(tokenize_function, batched=True)
         
-        model = BertForSequenceClassification.from_pretrained(_MODELO, num_labels=2)
+        if _FEATURES_NUMERICS:
+            train_data = train_data.add_column('features_numerics', X_num_train.tolist())
+            eval_data = eval_data.add_column('features_numerics', X_num_eval.tolist())
+            model = BertWithNumericalFeatures()
+        else:
+            model = BertForSequenceClassification.from_pretrained(_MODELO, num_labels=2)
+            
         model.classifier.dropout = tf.keras.layers.Dropout(_DROP_OUT)
         
         trainer = Trainer(
@@ -165,6 +188,7 @@ if True:
         
         # Plotar o *loss* de validação para o *fold* atual
         plt.plot(val_losses_per_fold, label=f"Fold {fold + 1}")
+        # Limpar os dados do *loss* para o próximo *fold*
         val_losses_per_fold.clear()
         
         eval_results = trainer.evaluate()
@@ -173,12 +197,18 @@ if True:
         
         SalvarCsv(best_model_path, nome_arquivo_log_validacao, pd.DataFrame([{
             'tipo': 'treino',
-            'data': data_hora,
+            'date': data_hora,
             'log': f'{eval_results}',
         }]).round(5))
+        
+    _MODELO = trainer.state.best_model_checkpoint
     
-    model = BertForSequenceClassification.from_pretrained(trainer.state.best_model_checkpoint)
-    model.save_pretrained(best_model_path)
+    if _FEATURES_NUMERICS:
+        model = BertWithNumericalFeatures().save(best_model_path)
+    else:
+        model = BertForSequenceClassification.from_pretrained(trainer.state.best_model_checkpoint)
+        model.save_pretrained(best_model_path)
+    
     shutil.rmtree(trainer.state.best_model_checkpoint, ignore_errors=True)
 
     plt.xlabel("Época")
@@ -191,9 +221,9 @@ if True:
     print(f"\nF1 Score médio após cross-validation: {np.mean(f1_scores)}")
 
     SalvarCsv(patch, nome_arquivo_results, pd.DataFrame([{
-        'data': data_hora,
-        'modo': 'train_VAL_test',
-        'divisao': f'{split_train}_{split_val}_{int(split_test*100)}',
+        'date': data_hora,
+        'mode': 'train_VAL_test',
+        'division_dataset': f'{split_train}_{split_val}_{int(split_test*100)}',
         'classifier': 'BERT',
         'vectorizer': 'BERT',
         'features_used': _FEATURES,
@@ -204,14 +234,24 @@ if True:
         'f1_score_variance': np.var(f1_scores),
         'f1_score_min': np.min(f1_scores),
         'f1_score_max': np.max(f1_scores),
-        'observacao': observacao
+        'observation': observacao
     }]).round(5))
     
 
 print("\nCarregando o melhor modelo para o teste final...")
-model = BertForSequenceClassification.from_pretrained(best_model_path)
+
+_MODELO = best_model_path
+
+if _FEATURES_NUMERICS:
+    model = BertWithNumericalFeatures()
+else:
+    model = BertForSequenceClassification.from_pretrained(best_model_path)
+
 test_data = Dataset.from_dict({'text': X_test.tolist(), 'labels': y_test.tolist()})
 test_data = test_data.map(tokenize_function, batched=True)
+
+if _FEATURES_NUMERICS:
+    test_data = test_data.add_column('features_numerics', X_num_test.tolist())
 
 training_args = TrainingArguments(
     output_dir=best_model_path,
@@ -230,9 +270,9 @@ print(f"Resultados teste: {test_results}")
 print(f"\nF1 Score médio após teste: {test_results['eval_f1']}")
 
 SalvarCsv(patch, nome_arquivo_results, pd.DataFrame([{
-        'data': data_hora,
-        'modo': 'train_val_TEST',
-        'divisao': f'{split_train}_{split_val}_{int(split_test*100)}',
+        'date': data_hora,
+        'mode': 'train_val_TEST',
+        'division_dataset': f'{split_train}_{split_val}_{int(split_test*100)}',
         'classifier': 'BERT',
         'vectorizer': 'BERT',
         'features_used': _FEATURES,
@@ -243,7 +283,7 @@ SalvarCsv(patch, nome_arquivo_results, pd.DataFrame([{
         'f1_score_variance': '---',
         'f1_score_min': '---',
         'f1_score_max': '---',
-        'observacao': observacao
+        'observation': observacao
     }]).round(5))
 
 # Previsões no conjunto de teste
