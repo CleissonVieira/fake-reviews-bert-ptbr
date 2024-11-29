@@ -32,45 +32,16 @@ O objetivo principal é encontrar a melhor configuração no ajuste fino para um
 Link para o Repositório: [https://github.com/CleissonVieira/fake-reviews-bert-ptbr](https://github.com/CleissonVieira/fake-reviews-bert-ptbr)
 
 
+# Pós finalização do TCC
+Estudar melhor o uso do content. Testar 2 folds e 100 épochs.
+Testar outros modelos, quem sabe um mais focado no português.
+Iniciar o treinamento com GPT para modelos de negócio
 
 
-CONCLUSÕES
-- O conjunto de dados é considerado pequeno, e por isso é fácil dar overfiting
-- Com isso, o ideal é diminuir o Learning rate e as épocas (verificado em artigo sobre instabilidade no fine-tuning acima de 5 epocas)
-
-CONVERSA COM PERCISI:
-- o melhor cenário dele incluiu apenas features numéricas
-- a feature textual (content) diminui o f1-score
-
-O Percisi pegou os resultados do teste, coletado durante o cross_validate
-No código dele, acrescentei o train_test_split, separei 20% para realizar o teste separado. O f1-score varia pouco entre validação e teste
-
-# Tabela de execuções 
-1. **ok** Executar KNN,Word2Vec 64_16_20 com feature content
-2. **ok** Executar KNN,Word2Vec 64_16_20 com features numéricas
-3. **ok** Executar KNN,Word2Vec 64_16_20 sem features content e numéricas
-
-# Weight_decay de 0.03, early_stopping_patience de 3, sem DropOut
-4. **ok** Executar BERT,BERT 64_16_20 feature content
-5. **ok** Executar BERT,BERT 64_16_20 features numéricas sem legenda
-6. **ok** Executar BERT,BERT 64_16_20 features numéricas com legenda
-7. **ok** Executar BERT,BERT 64_16_20 features content e numéricas sem legenda
-8. **ok** Executar BERT,BERT 64_16_20 features content e numéricas com legenda
-
-# Weight_decay 0.01, early_stopping_patience 2, com DropOut 0.5
-4. **ok** Executar BERT,BERT 64_16_20 feature content
-5. **ok** Executar BERT,BERT 64_16_20 features numéricas sem legenda
-6. **ok** Executar BERT,BERT 64_16_20 features numéricas com legenda
-7. **ok** Executar BERT,BERT 64_16_20 features content e numéricas sem legenda
-8. **ok** Executar BERT,BERT 64_16_20 features content e numéricas com legenda
-
-# Retestar cenários abaixo
-# Utilizar: LR 1e-3, Epochs 20, batch_size 32, ealy_stopping 5
-# Com as alterações e apenas features numéricas (código separado)
-5. **ok** Executar BERT,BERT 64_16_20 features numéricas sem legenda
-
-# Weight_decay 0.01, early_stopping_patience 2, com DropOut 0.5
-5. **ok** Executar BERT,BERT 64_16_20 features numéricas sem legenda
-
-# O melhor de todos os cenários acima testar com LR 1e-05 e 5e-05
-# O melhor entre os LRs 1e-05, 3e-05 e 5e-05 testar com 10 épocas ou mais
+# Ajustes artigos
+- tem o trabalho de Percisi como relacionado, falar do que é diferente
+- Reler Análise dos Resultados acrescentando mais detalhes. Se possível apresentar execuções com mais épocas mostrando a instabilidade. Explicar nos gráficos de perda durante a validação qual foi o modelo salvo
+- o que os trabalhos fizeram e o que vai fazer diferente (1 paragrafo dizendo o que é diferente nos  trabalhos relacionados)
+- usar um trabalho de fake news
+- ajustar imagens do resultado misturado com as referencias
+- verificar as referencias

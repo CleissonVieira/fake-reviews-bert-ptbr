@@ -26,49 +26,6 @@ def SalvarCsv(pathCsv, nomeCsv, resultados):
     if not os.path.exists(f'{pathCsv}'): os.makedirs(f'{pathCsv}')
     if os.path.isfile(f'{patch}'): resultados.to_csv(f'{patch}', mode='a', header=False, index=False)
     else: resultados.to_csv(f'{patch}', mode='w', index=False)
-
-# def calculate_bootstrap_metrics(trainer, test_data, n_bootstraps=50):
-#     accuracy_scores, precision_scores, recall_scores, f1_scores = [], [], [], []
-
-#     for i in range(n_bootstraps):
-#         bootstrap_indices = np.random.choice(len(test_data), len(test_data), replace=True)
-#         bootstrap_sample = test_data.select(bootstrap_indices)
-
-#         predictions = trainer.predict(bootstrap_sample)
-#         preds = np.argmax(predictions.predictions, axis=1)
-#         labels = predictions.label_ids
-
-#         acc = accuracy_score(labels, preds)
-#         precision = precision_score(labels, preds, average='binary')
-#         recall = recall_score(labels, preds, average='binary')
-#         f1 = f1_score(labels, preds, average='binary')
-
-#         accuracy_scores.append(acc)
-#         precision_scores.append(precision)
-#         recall_scores.append(recall)
-#         f1_scores.append(f1)
-        
-#     print(f"\nF1 Score médio após teste: {np.mean(f1_scores)}")
-
-#     SalvarCsv(patch, nome_arquivo_results, pd.DataFrame([{
-#         'date': data_hora,
-#         'mode': 'train_TEST',
-#         'division_dataset': f'{split_train}_{split_val}_{int(split_test*100)}',
-#         'model': 'BERT',
-#         'accuracy_mean': np.mean(accuracy_scores),
-#         'precision_mean': np.mean(precision_scores),
-#         'recall_mean': np.mean(recall_scores),
-#         'f1_score_mean': np.mean(f1_scores),
-#         'f1_score_std': np.std(f1_scores),
-#         'f1_score_variance': np.var(f1_scores),
-#         'f1_score_min': np.min(f1_scores),
-#         'f1_score_max': np.max(f1_scores),
-#         'learning_rate': _LEARNING_RATE,
-#         'max_lenght': _MAX_LENGTH,
-#         'weight_decay': _WEIGHT_DECAY,
-#         'features_used': _FEATURES,
-#         'observation': observacao
-#     }]).round(5))
     
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
@@ -86,7 +43,7 @@ vectorFeatures = [
     [f'qtd_friends, qtd_reviews, qtd_photos. (com legenda)', df.apply(lambda x: f"Número de amigos: {x['qtd_friends']}, Número de avaliações: {x['qtd_reviews']}, Número de fotos: {x['qtd_photos']}.", axis=1)],
     [f'content, qtd_friends, qtd_reviews, qtd_photos. (sem legenda)', df.apply(lambda x: f'"{x['content']}", {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)],
     [f'content, qtd_friends, qtd_reviews, qtd_photos. (com legenda)', df.apply(lambda x: f'Review: "{x['content']}", Número de amigos: {x['qtd_friends']}, Número de avaliações: {x['qtd_reviews']}, Número de fotos: {x['qtd_photos']}.', axis=1)]
-]
+]   
 
 vectorLearningRate = [1e-5, 2e-5, 3e-5, 5e-5]
 vectorWeightDecay = [0.05, 0.03, 0.01]
@@ -301,6 +258,3 @@ for feature, learning_rate, weight_decay in combinations:
     plt.savefig(conf_matrix_path)
     plt.show()
     plt.close()
-
-    # calculate_bootstrap_metrics(test_trainer, test_data)
-    

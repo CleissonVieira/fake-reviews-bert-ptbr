@@ -46,7 +46,7 @@ vectorFeatures = [
 ]
 
 vectorLearningRate = [1e-5, 2.5e-5, 3e-5] # 1e-5, 2.5e-5, 2e-5, 3e-5
-vectorWeightDecay = [0.03, 0.01, 0.001] # 0.05 0.03, 0.01, 0.001
+vectorWeightDecay = [0.001] # 0.05 0.03, 0.01, 0.001
 combinations = itertools.product(vectorFeatures, vectorLearningRate, vectorWeightDecay)
 
 _SAMPLE_DF = 3387
@@ -94,22 +94,10 @@ for feature, learning_rate, weight_decay in combinations:
     best_model_path = f"{patchModel}{data_hora}_{_MAX_LENGTH}_{_LEARNING_RATE}_{_WEIGHT_DECAY}/"
     observacao = f'df full {int(_SAMPLE_DF*2)} balanceado, {_EPOCHS} epochs, {_K_FOLDS} folds, early_stopping {_EARLY_STOPPING}, drop_out {_DROP_OUT}, batch_size {_BATCH_SIZE}'
 
-    if best_model_path.__contains__("_256_1e-05_0.03"):
-        best_model_path = f"{patchModel}20241111_164730_256_1e-05_0.03/"
-    elif best_model_path.__contains__("_256_1e-05_0.01"):
-        best_model_path = f"{patchModel}20241111_190838_256_1e-05_0.01/"
-    elif best_model_path.__contains__("_256_1e-05_0.001"):
+    if best_model_path.__contains__("_256_1e-05_0.001"):
         best_model_path = f"{patchModel}20241111_220341_256_1e-05_0.001/"
-    elif best_model_path.__contains__("_256_2.5e-05_0.03"):
-        best_model_path = f"{patchModel}20241112_005537_256_2.5e-05_0.03/"
-    elif best_model_path.__contains__("_256_2.5e-05_0.01"):
-        best_model_path = f"{patchModel}20241112_032442_256_2.5e-05_0.01/"
     elif best_model_path.__contains__("_256_2.5e-05_0.001"):
         best_model_path = f"{patchModel}20241112_054859_256_2.5e-05_0.001/"
-    elif best_model_path.__contains__("_256_3e-05_0.03"):
-        best_model_path = f"{patchModel}20241112_080529_256_3e-05_0.03/"
-    elif best_model_path.__contains__("_256_3e-05_0.01"):
-        best_model_path = f"{patchModel}20241112_102156_256_3e-05_0.01/"
     elif best_model_path.__contains__("_256_3e-05_0.001"):
         best_model_path = f"{patchModel}20241112_125006_256_3e-05_0.001/"
     else:
