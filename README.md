@@ -30,18 +30,3 @@ O objetivo principal é encontrar a melhor configuração no ajuste fino para um
 ---
 
 Link para o Repositório: [https://github.com/CleissonVieira/fake-reviews-bert-ptbr](https://github.com/CleissonVieira/fake-reviews-bert-ptbr)
-
-
-# Pós finalização do TCC
-Estudar melhor o uso do content. Testar 2 folds e 100 épochs.
-Testar outros modelos, quem sabe um mais focado no português.
-Iniciar o treinamento com GPT para modelos de negócio
-
-
-# Ajustes artigos
-- tem o trabalho de Percisi como relacionado, falar do que é diferente
-- Reler Análise dos Resultados acrescentando mais detalhes. Se possível apresentar execuções com mais épocas mostrando a instabilidade. Explicar nos gráficos de perda durante a validação qual foi o modelo salvo
-- o que os trabalhos fizeram e o que vai fazer diferente (1 paragrafo dizendo o que é diferente nos  trabalhos relacionados)
-- usar um trabalho de fake news
-- ajustar imagens do resultado misturado com as referencias
-- verificar as referencias
