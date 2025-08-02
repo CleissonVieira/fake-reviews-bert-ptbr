@@ -20,6 +20,8 @@ matplotlib.use('Agg')
 url_dataset = 'https://raw.githubusercontent.com/CleissonVieira/fake-reviews-bert-ptbr/refs/heads/main/datasets/yelp-fake-reviews-dataset-pt.csv'
 df = pd.read_csv(url_dataset)
 
+# Avaliar par adicionar f1 por cada época
+
 # PERCISI
 _FEATURES = f'textual: content'
 df['cleaned_content'] = df['content']
@@ -124,8 +126,8 @@ _MAX_LENGTH = 256
 _BATCH_SIZE = 16
 _EPOCHS = 5
 _LEARNING_RATE = 3e-5
-_WEIGHT_DECAY=0.01
-_EARLY_STOPPING = 2
+_WEIGHT_DECAY=0.03
+_EARLY_STOPPING = 5
 _DROP_OUT=0.5
 _K_FOLDS = 5
 skf = StratifiedKFold(n_splits=_K_FOLDS, shuffle=True, random_state=42)
