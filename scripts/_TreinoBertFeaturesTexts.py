@@ -20,15 +20,25 @@ matplotlib.use('Agg')
 url_dataset = 'https://raw.githubusercontent.com/CleissonVieira/fake-reviews-bert-ptbr/refs/heads/main/datasets/yelp-fake-reviews-dataset-pt.csv'
 df = pd.read_csv(url_dataset)
 
-# _FEATURES = f'textual: content'
-# df['cleaned_content'] = df['content']
+# PERCISI
+_FEATURES = f'textual: content'
+df['cleaned_content'] = df['content']
 
-# _FEATURES = f'textual: qtd_friends, qtd_reviews, qtd_photos. (sem legenda)'
-# df['cleaned_content'] = df.apply(lambda x: f"{x['qtd_friends']},{x['qtd_reviews']},{x['qtd_photos']}.", axis=1)
+# PERCISI
+_FEATURES = f'textual: qtd_friends, qtd_reviews, qtd_photos. (sem legenda)'
+df['cleaned_content'] = df.apply(lambda x: f"{x['qtd_friends']},{x['qtd_reviews']},{x['qtd_photos']}.", axis=1)
+
+# PERCISI
+_FEATURES = f'textual+num: content, qtd_friends, qtd_reviews, qtd_photos. (sem legenda, com aspas)'
+df['cleaned_content'] = df.apply(lambda x: f'{x['content']}, {x['qtd_friends']}, {x['qtd_reviews']}, {x['qtd_photos']}.', axis=1)
+
+
+
+
 
 # BEST 1 (com legenda)
-_FEATURES = f'qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
-df['cleaned_content'] = df.apply(lambda x: f"Número de amigos: {x['qtd_friends']}. Número de avaliações: {x['qtd_reviews']}. Número de fotos: {x['qtd_photos']}.", axis=1)
+# _FEATURES = f'qtd_friends, qtd_reviews, qtd_photos. (com legenda)'
+# df['cleaned_content'] = df.apply(lambda x: f"Número de amigos: {x['qtd_friends']}. Número de avaliações: {x['qtd_reviews']}. Número de fotos: {x['qtd_photos']}.", axis=1)
 
 # BEST 2 (sem legenda, com aspas)
 # _FEATURES = f'textual+num: content, qtd_friends, qtd_reviews, qtd_photos. (sem legenda, com aspas)'
